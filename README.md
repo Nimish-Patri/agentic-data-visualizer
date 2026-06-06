@@ -11,7 +11,7 @@ Instead of building a bloated multi-agent setup, this project focuses on a lean,
 ### Core Architecture
 1. **Frontend (React):** A clean, single-page split-screen UI featuring a chat container on the left and a dynamic chart rendering area on the right.
 2. **Backend (FastAPI + Uvicorn):** Exposes a clean, stateless-to-stateful POST endpoint to process messages.
-3. **Agent Core (LangGraph):** A simplified single-node state graph that tracks conversation history and uses **GPT-4o-mini** with structured outputs to convert raw data fields into UI-ready configurations (`chart_type`, `x_axis`, `y_axis`, and filtered data rows).
+3. **Agent Core (LangGraph):** A simplified single-node state graph that tracks conversation history and uses **GPT-5-mini** with structured outputs to convert raw data fields into UI-ready configurations (`chart_type`, `x_axis`, `y_axis`, and filtered data rows).
 
 ---
 
@@ -39,7 +39,7 @@ To keep the project lightweight and maintainable, dependencies have been strippe
 * **Frontend:** React (JavaScript), TailwindCSS, Recharts
 * **Backend:** FastAPI, Uvicorn, Pydantic
 * **AI Agent Orchestration:** LangGraph, LangChain Core
-* **LLM Provider:** OpenAI (gpt-5o-mini)
+* **LLM Provider:** OpenAI (GPT-5 mini)
 
 ---
 
