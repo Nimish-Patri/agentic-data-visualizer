@@ -1,56 +1,60 @@
-# Agentic S&P 500 Analytics Dashboard 📈
+# Agentic S&P 500 Analytics Dashboard
 
-A highly streamlined, full-stack web application that allows users to analyze and visualize data from a full S&P 500 dataset using natural language. Built as an educational MVP to master stateful orchestration with **LangGraph**, API delivery via **FastAPI**, and dynamic frontend rendering with **React** and **Recharts**.
+A highly streamlined, full-stack web application that allows users to analyze and visualize 5 years of historical S&P 500 stock data using natural language. Built as an educational MVP to master stateful orchestration with **LangGraph**, API delivery via **FastAPI**, and dynamic frontend rendering with **React** and **Recharts**.
 
 ---
 
-## 🚀 Overview
+## Overview
 
-Instead of building a bloated multi-agent setup, this project focuses on a lean, high-impact architecture. It demonstrates how an LLM can act as a natural language interface for financial datasets by tracking conversational state and mapping user intent directly to frontend chart properties.
+This project implements a single-node state graph architecture designed to bridge the gap between natural language user intent and structured data visualizations. By managing conversational context and utilizing strict schema generation, the application enables an LLM to serve as an intelligent interface that transforms raw time-series metrics directly into customizable dashboard properties.
 
 ### Core Architecture
-1. **Frontend (React):** A clean, single-page split-screen UI featuring a chat container on the left and a dynamic chart rendering area on the right.
-2. **Backend (FastAPI + Uvicorn):** Exposes a clean, stateless-to-stateful POST endpoint to process messages.
-3. **Agent Core (LangGraph):** A simplified single-node state graph that tracks conversation history and uses **GPT-5.4-mini** with structured outputs to convert raw data fields into UI-ready configurations (`chart_type`, `x_axis`, `y_axis`, and filtered data rows).
+1. **Frontend (React + Vite):** A clean, single-page split-screen UI featuring a chat container on the left and a dynamic chart rendering area on the right.
+2. **Backend (FastAPI + Uvicorn):** Exposes a clean, stateless-to-stateful POST endpoint to process messages and handle cross-origin requests.
+3. **Agent Core (LangGraph):** A simplified single-node state graph that maintains conversation history, reads instructions dynamically from an external system file (`prompt.md`), and uses **GPT-4o-mini** with structured outputs to efficiently bind raw metrics directly into UI-ready chart properties.
 
 ---
 
-## 📊 Dataset Focus: S&P 500
+## Dataset Focus: S&P 500 Historical Data
 
-The backend contains a complete S&P 500 dataset (`sp500_data.csv`). The LangGraph agent is primed to look at key institutional financial fields, including:
-* `Ticker` (e.g., AAPL, MSFT, AMZN)
-* `Sector` (e.g., Information Technology, Financials, Healthcare)
-* `MarketCap` (Market Capitalization)
-* `Price` (Current stock price)
-* `PE_Ratio` (Price-to-Earnings Ratio)
-* `DividendYield` (Annual dividend payout percentage)
+The application loads a 5-year historical asset dataset (`sp500_5yr.csv`) into memory. The LangGraph agent is primed to parse user queries and map them against the following transactional time-series columns:
 
-Users can type queries like: 
-* *"Show me a bar chart of the top 10 companies by market cap in the Technology sector."*
-* *"Compare the P/E ratios of Apple, Microsoft, and Google."*
-* *"Change that previous comparison into a line chart instead."*
+* `date`: The execution timestamp of the stock metrics (YYYY-MM-DD).
+* `open`: The starting market price for the stock on that day.
+* `high`: The highest trading price reached during the session.
+* `low`: The lowest trading price reached during the session.
+* `close`: The final closing market price for the stock.
+* `volume`: The total quantity of shares traded throughout the session.
+* `Name`: The equity ticker symbol used to filter rows (e.g., AAP, ABBV, CNC, CNP, SJM, SLB).
+
+### Sample Analytical Prompts
+* *"Show me a line chart of the closing prices for CNC"*
+* *"Show me a bar chart of the highest value for ABBV"*
+* *"Change that previous view into a line chart instead"*
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 To keep the project lightweight and maintainable, dependencies have been stripped down to the bare essentials:
 
-* **Frontend:** React (JavaScript), TailwindCSS, Recharts
-* **Backend:** FastAPI, Uvicorn, Pydantic
+* **Frontend:** React (JavaScript), Vite, TailwindCSS, Recharts, Lucide React
+* **Backend:** Python, FastAPI, Uvicorn, Pydantic, Pandas, Python-Dotenv
 * **AI Agent Orchestration:** LangGraph, LangChain Core
-* **LLM Provider:** OpenAI (GPT-5.4-mini)
+* **LLM Provider:** OpenAI (via `gpt-4o-mini` structured output bindings)
 
 ---
 
-## 🧠 LangGraph State Management
+## LangGraph State Management & Graph Flow
 
-The core of this application relies on LangGraph's explicit state tracking. It monitors both what was said and how the dashboard should change over time:
+The core of this application relies on LangGraph's explicit state tracking. It monitors both what was said chronologically and how the visual dashboard configuration should change over time:
 
 ```python
-from typing import TypedDict, List, Dict, Any
+from typing import Annotated, Dict, Any
 from langchain_core.messages import BaseMessage
+from typing_extensions import TypedDict
+from langgraph.graph.message import add_messages
 
 class DashboardState(TypedDict):
-    messages: List[BaseMessage]       # Keeps track of conversational chat history
-    chart_config: Dict[str, Any]      # Structured JSON formatting for the React frontend
+    messages: Annotated[list[BaseMessage], add_messages]  # Keeps track of conversational chat history
+    chart_config: Dict[str, Any]                          # Structured JSON formatting for the React frontend
