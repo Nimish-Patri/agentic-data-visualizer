@@ -28,6 +28,15 @@ class DashboardState(TypedDict):
 # Load dataset once globally into memory to inspect columns/data quickly
 CSV_PATH = os.path.join(os.path.dirname(__file__), "sp500_5yr.csv")
 
+# Load the system prompt template from an external file for better maintainability
+PROMPT_PATH = os.path.join(os.path.dirname(__file__), "prompt.md")
+
+def load_system_prompt(data_context: str) -> str:
+    with open(PROMPT_PATH, "r", encoding="utf-8") as f:
+        template = f.read()
+
+    return template.format(data_context=data_context)
+
 def llm_chart_node(state: DashboardState) -> Dict[str, Any]:
     """
     Reads the user's request, inspects the CSV data, and forces the LLM 
@@ -48,18 +57,7 @@ def llm_chart_node(state: DashboardState) -> Dict[str, Any]:
         data_context = f"Error reading CSV file path: {str(e)}"
 
     # System rules to guide the LLM's structural framing
-    system_prompt = (
-        "You are an expert Data Analyst AI agent. Your sole purpose is to look at the dataset context "
-        "provided below and fulfill the user's visualization request.\n\n"
-        f"{data_context}\n\n"
-        "CRITICAL INSTRUCTIONS:\n"
-        "1. Filter the dataset accurately based on the requested ticker Symbol (found in the 'Name' column).\n"
-        "2. Extract the matching coordinate pairs. Map dates or categories to the 'name' property and metrics "
-        "to the 'value' property.\n"
-        "3. Keep data sizes compact. Do not return more than 15-20 data points so the graph is readable.\n"
-        "4. If the user asks to modify a previous chart (e.g., 'Change it to a bar chart'), respect the existing data "
-        "and simply change the chart_type."
-    )
+    system_prompt = load_system_prompt(data_context)
 
     # Initialize the LLM structured output engine
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
